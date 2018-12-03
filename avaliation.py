@@ -1,24 +1,52 @@
-from main import svm_builder, mlp_builder
-from keras.utils import to_categorical
+import numpy as np
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 
 
-def sum():
-    features_pro = np.load('feature_std.npy')
-    label = np.load('label.npy')
 
-    svmx_train, svmx_aux, svmy_train, svmy_aux = train_test_split(features_pro, label, test_size=0.5)
-    svmx_validation, svmx_test, svmy_validation, svmy_test = train_test_split(svmx_aux, svmy_aux, test_size=0.5)
+def mlp_builder(x_train, y_train):
+    mlp = MLPClassifier(hidden_layer_sizes=(300, 250, 200), solver='sgd', tol=0, batch_size=500, max_iter=200,
+                        shuffle=True,
+                        learning_rate='adaptive', learning_rate_init=1e-3, power_t=.9)
+    mlp.fit(x_train, y_train)
+    return mlp
 
+
+def svm_builder(x_train, y_train):
+    svm = SVC(probability=True)
+    svm.fit(x_train, y_train)
+    return svm
+
+
+def somatorio():
+    features_std = np.load('feature_std.npy')
     features_pro = np.load('feature_prop.npy')
-    label = np.argmax(np.load('label.npy'), axis=1)
+    label_std = np.load('label.npy')
+    label_pro = np.argmax(np.load('label.npy'), axis=1)
 
-    mlpx_train, mlpx_aux, mlpy_train, mlpy_aux = train_test_split(features_pro, label, test_size=0.5)
-    mlpx_validation, mlpx_test, mlpy_validation, mlpy_test = train_test_split(mlpx_aux, mlpy_aux, test_size=0.5)
+    order = np.arange(features_pro.shape[0])
+    np.random.shuffle(order)
 
-    svm = svm_builder(svmx_train, svmy_train)
-    mlp = mlp_builder(mlpx_train, mlpy_train)
+    train_order = order[:int(features_pro.shape[0] / 2)]
+    validation_order = order[int(features_pro.shape[0] / 2):int(features_pro.shape[0] * 3 / 4)]
+    test_order = order[int(features_pro.shape[0] * 3 / 4):]
 
-    out_svm = svm.predict(svmx_test)
+    svm = svm_builder(features_pro[train_order], label_pro[train_order])
+    mlp = mlp_builder(features_std[train_order], label_std[train_order])
+
+    pred_svm = svm.predict_proba(features_pro[test_order])
+    pred_mlp = mlp.predict_proba(features_std[test_order])
+
+    sum = np.argmax(np.add(pred_mlp, pred_svm), axis=1)
+    prod = np.argmax(np.multiply(pred_mlp, pred_svm), axis=1)
+
+    result = np.argmax(pred_svm, axis=1) != np.argmax(pred_mlp, axis=1)
+
+    print(pred_svm[result])
+    print(pred_mlp[result])
+
+    # with open('combined.csv', 'a+') as file:
+    #     file.write('%.4f %.4f\n' % (np.mean(sum == label_pro[test_order]), np.mean(prod == label_pro[test_order])))
 
 
 def prod():

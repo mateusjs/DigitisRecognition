@@ -1,7 +1,7 @@
+from avaliation import svm_builder, mlp_builder, somatorio
 import numpy as np
-from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.svm import LinearSVC
+
 
 
 def svm():
@@ -32,20 +32,8 @@ def mlp():
             mlp.score(x_train, y_train), mlp.score(x_test, y_test), mlp.score(x_validation, y_validation)))
 
 
-def mlp_builder(x_train, y_train):
-    mlp = MLPClassifier(hidden_layer_sizes=(300, 250, 200), solver='sgd', tol=0, batch_size=500, max_iter=200,
-                        shuffle=True,
-                        learning_rate='adaptive', learning_rate_init=1e-3, power_t=.9)
-    mlp.fit(x_train, y_train)
-    return mlp
-
-
-def svm_builder(x_train, y_train):
-    svm = LinearSVC()
-    svm.fit(x_train, y_train)
-    return svm
-
 
 for _ in range(10):
     print('iteration:', _)
+    somatorio()
 

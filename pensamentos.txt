@@ -1,0 +1,2 @@
+a combinação manteve uma alta taxa de acerto, pois em 81% dos casos os classificadores concordam com a classe predita, já nos outros casos o disacordo
+entre os classificadores não tem influência suficiente para diminuir a acuracia total
